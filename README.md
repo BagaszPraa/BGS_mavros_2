@@ -19,11 +19,6 @@ rosinstall_generator --format repos mavlink | tee /tmp/mavlink.repos
 ```
 rosinstall_generator --format repos --upstream mavros | tee -a /tmp/mavros.repos
 ```
-# alternative: latest source
-# rosinstall_generator --format repos --upstream-development mavros | tee -a /tmp/mavros.repos
-# For fetching all the dependencies into your ros2_ws, just add '--deps' to the above scripts
-# ex: rosinstall_generator --format repos --upstream mavros --deps | tee -a /tmp/mavros.repos
-
 # 4. Create workspace & deps
 ```
 vcs import src < /tmp/mavlink.repos
