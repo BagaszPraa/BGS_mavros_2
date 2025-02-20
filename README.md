@@ -1,6 +1,8 @@
 INSTALLATION
 ======
+```
 sudo apt install -y python3-vcstool python3-rosinstall-generator python3-osrf-pycommon
+```
 
 # 1. Create the workspace: unneeded if you already has workspace
 ```
