@@ -1,3 +1,48 @@
+INSTALLATION
+======
+sudo apt install -y python3-vcstool python3-rosinstall-generator python3-osrf-pycommon
+
+# 1. Create the workspace: unneeded if you already has workspace
+```
+mkdir -p ~/bagas_ws/src
+cd ~/bagas_ws
+```
+
+# 2. Install MAVLink
+```
+rosinstall_generator --format repos mavlink | tee /tmp/mavlink.repos
+```
+
+# 3. Install MAVROS: get source (upstream - released)
+```
+rosinstall_generator --format repos --upstream mavros | tee -a /tmp/mavros.repos
+```
+# alternative: latest source
+# rosinstall_generator --format repos --upstream-development mavros | tee -a /tmp/mavros.repos
+# For fetching all the dependencies into your ros2_ws, just add '--deps' to the above scripts
+# ex: rosinstall_generator --format repos --upstream mavros --deps | tee -a /tmp/mavros.repos
+
+# 4. Create workspace & deps
+```
+vcs import src < /tmp/mavlink.repos
+vcs import src < /tmp/mavros.repos
+rosdep install --from-paths src --ignore-src -y
+```
+
+# 5. Install GeographicLib datasets:
+```
+sudo ./src/mavros/mavros/scripts/install_geographiclib_datasets.sh
+```
+
+# 6. Build source
+```
+colcon build
+```
+# 7. Make sure that you use setup.bash or setup.zsh from workspace.
+```
+source install/setup.bash
+```
+
 MAVROS
 ======
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/mavlink/mavros)](https://github.com/mavlink/mavros/releases)  [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/mavlink/mavros?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)  [![CI](https://github.com/mavlink/mavros/actions/workflows/main.yml/badge.svg)](https://github.com/mavlink/mavros/actions/workflows/main.yml)
