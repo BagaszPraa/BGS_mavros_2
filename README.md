@@ -13,29 +13,27 @@ cd ~/bagas_ws
 # 2. Install MAVLink
 ```
 rosinstall_generator --format repos mavlink | tee /tmp/mavlink.repos
-```
-
-# 3. Install MAVROS: get source (upstream - released)
-```
-rosinstall_generator --format repos --upstream mavros | tee -a /tmp/mavros.repos
-```
-# 4. Create workspace & deps
-```
 vcs import src < /tmp/mavlink.repos
-vcs import src < /tmp/mavros.repos
 rosdep install --from-paths src --ignore-src -y
 ```
 
-# 5. Install GeographicLib datasets:
+# 3. Install MAVROS
 ```
-sudo ./src/mavros/mavros/scripts/install_geographiclib_datasets.sh
+cd src
+git clone --recursive https://github.com/mavlink/BGS_mavros_2.git
 ```
 
-# 6. Build source
+# 4. Install GeographicLib datasets:
 ```
+sudo ./BGS_mavros_2/mavros/scripts/install_geographiclib_datasets.sh
+```
+
+# 5. Build source
+```
+cd ..
 colcon build
 ```
-# 7. Make sure that you use setup.bash or setup.zsh from workspace.
+# 6. Make sure that you use setup.bash or setup.zsh from workspace.
 ```
 source install/setup.bash
 ```
