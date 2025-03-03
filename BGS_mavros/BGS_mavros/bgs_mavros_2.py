@@ -4,9 +4,11 @@ from rclpy.duration import Duration
 
 import sys
 import time
+import math
 from std_msgs.msg import String, Bool, Float64
+from sensor_msgs.msg import Range, NavSatFix
 from geometry_msgs.msg import Twist, PoseStamped
-from mavros_msgs.msg import State
+from mavros_msgs.msg import State, GlobalPositionTarget
 from mavros_msgs.srv import CommandTOL, CommandLong, CommandBool, SetMode, CommandHome
 
 from rclpy.qos import QoSProfile, QoSReliabilityPolicy, QoSHistoryPolicy
@@ -23,10 +25,12 @@ class command(Node):
         self.get_logger().info('PREPARING FUNCTION')
         #===== PUBLISHER ===========
         self.kontrol_pub = self.create_publisher(Twist,"/mavros/setpoint_velocity/cmd_vel_unstamped",10)
+        self.waypoint_pub = self.create_publisher(GlobalPositionTarget, '/mavros/setpoint_raw/global', 10)
         #===== SUBSCRIBER ==========
         self.pos_sub = self.create_subscription(PoseStamped, '/mavros/local_position/pose', self.pos_cb, qos_profile)
         self.state_sub = self.create_subscription(State ,'/mavros/state',self.state_cb, qos_profile)
         self.alt_sub = self.create_subscription(Float64, "/mavros/global_position/rel_alt", self.alt_cb, qos_profile)
+        self.kordinat_sub = self.create_subscription(NavSatFix, "mavros/global_position/global",self.kordinat_cb, qos_profile)
         #===== SERVICES ============
         self.arming_client = self.create_client(CommandBool, "/mavros/cmd/arming")
         while not self.arming_client.wait_for_service(timeout_sec=1.0):
@@ -40,11 +44,17 @@ class command(Node):
         while not self.land_client.wait_for_service(timeout_sec=1.0):
             self.get_logger().warn("Waiting for /mavros/cmd/land service...")
         
+        self.set_mode_client = self.create_client(SetMode, "mavros/set_mode")
+        while not self.set_mode_client.wait_for_service(timeout_sec=1.0):
+            self.get_logger().warn("Waiting for /mavros/set_mode service...")
+        
         #===== OBJECT IMPORT =======
         self.kontrol = Twist()
         self.status = State()
         self.alt = Float64()
         self.posisi = PoseStamped()
+        self.kordinat = NavSatFix()
+        self.waypoint = GlobalPositionTarget()
     
     def state_cb(self, msg):
         self.status = msg
@@ -52,6 +62,8 @@ class command(Node):
         self.alt = msg
     def pos_cb(self, msg):
         self.posisi = msg
+    def kordinat_cb(self, msg):
+        self.kordinat = msg
 
     def loading_animation(self):
         chars = ['-', '/', '|',"\\",'-']
@@ -150,6 +162,24 @@ class command(Node):
                 return -1
         else:
             self.get_logger().error("No response from land service")
+            return -1
+
+    def set_mode(self, mode):
+        self.get_logger().info("Initiating SetMode")
+        setmode_request = SetMode.Request()
+        setmode_request.custom_mode = mode
+        future = self.set_mode_client.call_async(setmode_request)
+        rclpy.spin_until_future_complete(self, future)
+        if future.result() is not None:
+            response: SetMode.Response = future.result()
+            if response.mode_sent:
+                self.get_logger().info(f"SETMODE to {mode} || STATUS : {response.mode_sent}")
+                return 0
+            else:
+                self.get_logger().error(f"SETMODE Failed : {response.mode_sent}")
+                return -1
+        else:
+            self.get_logger().error("No response from SetMode service")
             return -1
 
     def gps_hover(self, alt, vel):
@@ -270,4 +300,49 @@ class command(Node):
                 self.yawcorrect(yaw)
             print(f"KOORDINAT Y : {self.posisi.pose.position.y:.2f} || POSE Z : {self.posisi.pose.orientation.z:.2f} || STATUS : {str(status)}")
 
+    def ambilkordinat(self):
+        while rclpy.ok():
+            rclpy.spin_once(self, timeout_sec=0.1)
+            if self.kordinat.latitude == 0.0 and self.kordinat.longitude == 0.0:
+                self.get_logger().warn("Coordinate Not Available, Please Wait...")
+                continue
+            print("================ KORDINAT ================")
+            print(f"LAT : {self.kordinat.latitude}")
+            print(f"LON : {self.kordinat.longitude}")
+            break
 
+
+    def cek_kordinat(self, threshold, next):
+        R = 6371.0  # RADIUS BUMI DALAM KILOMETER (KM)
+        lat1, lon1 = next
+        status = ""
+        while rclpy.ok():
+            rclpy.spin_once(self, timeout_sec=0.1)
+            dlat = math.radians(self.kordinat.latitude - lat1)
+            dlon = math.radians(self.kordinat.longitude - lon1)
+            a = math.sin(dlat / 2)**2 + math.cos(math.radians(lat1)) * math.cos(math.radians(self.kordinat.latitude)) * math.sin(dlon / 2)**2
+            c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+            distance = R * c
+            jarak = distance * 1000
+            if jarak < threshold:
+                status = "Coordinate Reached"
+                break
+            else:
+                status = "Still Far"
+            print(f"Distance : {jarak:.2f} meters || STATUS : {str(status)}")
+    
+    def set_waypoint(self,kordinat,alt): # baca referensi nya nihh https://ardupilot.org/dev/docs/copter-commands-in-guided-mode.html
+        # Cukup Sekali Publish Saja
+        lat, lon = kordinat
+        pos = self.waypoint
+        pos.coordinate_frame = 6
+        pos.type_mask = 3576 
+        pos.latitude = lat
+        pos.longitude = lon
+        pos.altitude = alt
+        while rclpy.ok():
+            rclpy.spin_once(self, timeout_sec=0.1)
+            if True:
+                self.get_logger().info(f"Fly To Coordinate {kordinat}")
+                self.waypoint_pub.publish(pos)
+                break
