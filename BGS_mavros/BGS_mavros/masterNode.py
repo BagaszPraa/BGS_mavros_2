@@ -9,7 +9,7 @@ def main():
     vtol.start()
     vtol.takeoff(1.0)
     time.sleep(4)
-    vtol.gps_hover(4.0,0.5)
+    vtol.gps_hover(10.0,0.5)
     vtol.majumundur(4.0,0.5,0.05)
     vtol.kanankiri(-4.0,0.5,0.05)
     vtol.majumundur(-4.0,0.5,0.05)

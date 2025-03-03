@@ -159,26 +159,24 @@ class command(Node):
         status = ""
         while rclpy.ok():
             rclpy.spin_once(self, timeout_sec=0.1)
+            self.kontrol_pub.publish(mov)
             if min < self.alt.data < max:
                 mov.linear.x = 0.0
                 mov.linear.y = 0.0
                 mov.linear.z = 0.0
-                self.kontrol_pub.publish(mov)
                 status = "STOP"
                 break
             if self.alt.data > max:
                 mov.linear.x = 0.0
                 mov.linear.y = 0.0
                 mov.linear.z = -vel
-                self.kontrol_pub.publish(mov)
                 status = "TURUN"
             if 0 < self.alt.data < min:
                 mov.linear.x = 0.0 
                 mov.linear.y = 0.0
                 mov.linear.z = vel
-                self.kontrol_pub.publish(mov)
                 status = "NAIK"
-        print(f"ALT_REL: {self.alt.data} meters | STATUS: {str(status)}")
+            print(f"ALT_REL: {self.alt.data:.2f} meters || STATUS: {str(status)}")
 
     
     def stop(self):
