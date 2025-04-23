@@ -65,7 +65,8 @@ class command(Node):
     def kordinat_cb(self, msg):
         self.kordinat = msg
 
-    def loading_animation(self):
+    #Masih punya bug membuat LAG
+    def loading_animation(self): 
         chars = ['-', '/', '|',"\\",'-']
         index = 0
         while True:
@@ -80,7 +81,7 @@ class command(Node):
         self.get_logger().info('Tunggu Koneksi FCU Boss')
         while rclpy.ok() and not self.status.connected:
             rclpy.spin_once(self, timeout_sec=0.1)
-            self.loading_animation()
+            # self.loading_animation()
         else:     
             if self.status.connected:
                 self.get_logger().info('FCU Connected')
@@ -93,7 +94,7 @@ class command(Node):
         self.get_logger().info("Switch ke GUIDED untuk Start")
         while rclpy.ok() and self.status.mode != "GUIDED":
             rclpy.spin_once(self, timeout_sec=0.1)
-            self.loading_animation()
+            # self.loading_animation()
         else:
             if self.status.mode == "GUIDED":
                 self.get_logger().info("GUIDED , Start Misi")
