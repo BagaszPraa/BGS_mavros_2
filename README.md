@@ -20,7 +20,7 @@ rosdep install --from-paths src --ignore-src -y
 # 3. Install MAVROS
 ```
 cd src
-git clone --recursive https://github.com/BagaszPraa/bgs_mavros2.git
+git clone --recursive -b BGS_MAVROS https://github.com/BagaszPraa/bgs_mavros2.git
 ```
 
 # 4. Install GeographicLib datasets:
