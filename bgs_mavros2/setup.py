@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-package_name = 'BGS_mavros'
+package_name = 'bgs_mavros2'
 
 setup(
     name=package_name,
@@ -10,7 +10,7 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
-        ('share/' + package_name, ['launch/gazebo_sitl.launch.py']),
+        ('share/' + package_name, ['launch/mavros_sitl.launch.py']),
         ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -21,8 +21,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'masterNode = BGS_mavros.masterNode:main',
-            'bgs_mavros_2 = BGS_mavros.bgs_mavros_2:main',
+            'masterNode = bgs_mavros2.masterNode:main',
+            'bgs_mavros_2= bgs_mavros2.bgs_mavros_2:main',
         ],
     },
 )
