@@ -2,6 +2,52 @@
 Changelog for package mavros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.10.1 (2025-06-06)
+-------------------
+* fix: display topic on service timeout error
+* Fix incorrect macro usage
+  RCLCPP_SMART_PTR_DEFINITIONS eventually is expanding to:
+  \#define __RCLCPP_MAKE_UNIQUE_DEFINITION(...) \
+  template<typename ... Args> \
+  static std::unique_ptr<__VA_ARGS_\_> \
+  make_unique(Args && ... args) \
+  { \
+  return std::unique_ptr<__VA_ARGS_\_>(new __VA_ARGS_\_(std::forward<Args>(args) ...)); \
+  }
+  which is incorrect for abstract classes like Endpoint or Plugin
+  RCLCPP_SMART_PTR_DEFINITIONS_NOT_COPYABLE is used instead excluding make_unique functionality
+* Contributors: Emmanuel Ferdman, Mykhailo Kuznietsov
+
+2.10.0 (2025-05-05)
+-------------------
+* extras: fix odid build
+* extras: re-generate all cog scripts
+* mavros: fix indentation
+* Merge branch 'master' into ros2
+  * master:
+  1.20.1
+  update changelog
+  1.20.0
+  update changelog
+  update mavlink dep branch
+  Add missing std_srvs dependency
+  add param to odom plugin
+  add frame_id parameter
+  Fix compile error when compiling with gcc 13
+* 1.20.1
+* update changelog
+* fix spelling error
+* add new flag
+* if
+* Address Warnings
+* cpplint
+* built successfully
+* 1.20.0
+* update changelog
+* add param to odom plugin
+* add frame_id parameter
+* Contributors: EnderMandS, Michael Carlstrom, Vladimir Ermakov
+
 2.9.0 (2024-10-10)
 ------------------
 * py-mavros: fix flake8 errors
@@ -52,6 +98,15 @@ Changelog for package mavros
 * Update mavlink.py
   Fixed bug `#569 <https://github.com/mavlink/mavros/issues/569>`_ from mavros. Fixed another bug in the building of the ros mavlink message- the seq field was not added to the ros mavlink message.
 * Contributors: Beniamino Pozzan, Vladimir Ermakov, danielkalmanson
+
+1.20.1 (2025-05-05)
+-------------------
+
+1.20.0 (2024-10-10)
+-------------------
+* add param to odom plugin
+* add frame_id parameter
+* Contributors: EnderMandS
 
 1.19.0 (2024-06-06)
 -------------------
